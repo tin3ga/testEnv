@@ -1,5 +1,5 @@
-ARG version=alpine
-FROM golang:${version} AS builder
+ARG GO_IMAGE=golang:1.23.0-alpine3.21
+FROM ${GO_IMAGE} AS builder
 
 WORKDIR /app
 COPY app.go .

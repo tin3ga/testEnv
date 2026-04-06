@@ -13,57 +13,72 @@ type Vars struct {
 	Seconds   string
 }
 
-func LoadVars() (*Vars, error) {
-	// err := godotenv.Load()
-	// if err != nil {
-	// 	log.Fatal("Error loading .env file")
-	// }
-	vars := &Vars{
+const (
+	defaultName      = "arif"
+	defaultCharacter = "octavia"
+	defaultRunTime   = 0
+	maxRunTime       = 3600
+)
+
+func LoadVars() *Vars {
+	return &Vars{
 		Name:      os.Getenv("NAME"),
 		Character: os.Getenv("CHARACTER"),
 		Seconds:   os.Getenv("RUN_TIME"),
 	}
-
-	return vars, nil
 }
 
 func ConvertToInt(str string) (int, error) {
 	if str == "" {
-		return -1, fmt.Errorf("empty string")
+		return 0, fmt.Errorf("empty string")
 	}
 	sec, err := strconv.Atoi(str)
 	if err != nil {
-		fmt.Println("Error converting seconds to int:", err)
-		os.Exit(1)
+		return 0, fmt.Errorf("invalid integer %q: %w", str, err)
 	}
 	return sec, nil
 
 }
 
-func main() {
-	vars, err := LoadVars()
+func NormalizeVars(vars *Vars) *Vars {
+	normalized := *vars
+	if normalized.Name == "" {
+		normalized.Name = defaultName
+	}
+	if normalized.Character == "" {
+		normalized.Character = defaultCharacter
+	}
+	if normalized.Seconds == "" {
+		normalized.Seconds = strconv.Itoa(defaultRunTime)
+	}
+	return &normalized
+}
 
+func ValidateRunTime(sec int) error {
+	if sec < 0 {
+		return fmt.Errorf("RUN_TIME must be >= 0, got %d", sec)
+	}
+	if sec > maxRunTime {
+		return fmt.Errorf("RUN_TIME must be <= %d, got %d", maxRunTime, sec)
+	}
+	return nil
+}
+
+func main() {
+	vars := NormalizeVars(LoadVars())
+
+	sec, err := ConvertToInt(vars.Seconds)
 	if err != nil {
+		fmt.Printf("Invalid RUN_TIME: %v\n", err)
 		os.Exit(1)
 	}
-
-	if *vars == (Vars{}) {
-		vars = &Vars{
-			Name:      "arif",
-			Character: "octavia",
-			Seconds:   "0",
-		}
+	if err := ValidateRunTime(sec); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	fmt.Printf("Hello,"+" %s"+"!", vars.Name)
 	fmt.Printf("\nFav Character:"+" %s \n", vars.Character)
-
-	sec, err := ConvertToInt(vars.Seconds)
-	if err != nil || sec < 0 {
-		fmt.Println("Error converting seconds:", err)
-		os.Exit(1)
-	}
-
 	fmt.Printf("\rscript will run for %d seconds", sec)
 
 	for i := sec; i > 0; i-- {
@@ -71,6 +86,4 @@ func main() {
 		fmt.Printf("\rscript will exit after %d seconds   ", i)
 	}
 	fmt.Printf("\rExited!                           \n")
-	os.Exit(0)
-
 }
