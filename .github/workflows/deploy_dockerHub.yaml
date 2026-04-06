@@ -51,14 +51,14 @@ jobs:
           platforms: linux/amd64
 
       - name: Run Trivy vulnerability scanner - Non Blocking
-        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1
         with:
           image-ref: testenv:${{ github.run_id }}
           format: "table"
           exit-code: 0 # Non blocking
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1
         with:
           image-ref: testenv:${{ github.run_id }}
           exit-code: 1 # Blocking
