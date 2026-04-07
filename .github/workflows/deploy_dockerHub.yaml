@@ -55,17 +55,31 @@ jobs:
         with:
           image-ref: testenv:${{ github.run_id }}
           format: "table"
+          scanners: "vuln"
           exit-code: 0 # Non blocking
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1
         with:
           image-ref: testenv:${{ github.run_id }}
+          format: "table"
+          scanners: "vuln"
           exit-code: 1 # Blocking
           ignore-unfixed: true
           vuln-type: "os,library"
           severity: "CRITICAL"
+
+      - name: Generate Trivy SARIF report
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1
+        if: always()
+        with:
+          image-ref: testenv:${{ github.run_id }}
           format: "sarif"
+          scanners: "vuln"
+          exit-code: 0
+          ignore-unfixed: true
+          vuln-type: "os,library"
+          severity: "CRITICAL"
           output: "trivy-results.sarif"
 
       - name: Upload Trivy scan results to GitHub Security tab
